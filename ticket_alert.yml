@@ -1,0 +1,23 @@
+name: Ticket Start Alert
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 21 * * *"
+permissions:
+  contents: write
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run monitor
+        env:
+          TICKET_LINE_CHANNEL_ACCESS_TOKEN: ${{ secrets.TICKET_LINE_CHANNEL_ACCESS_TOKEN }}
+        run: python monitor.py
+      - name: Save state
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add state.json
+          git diff --cached --quiet || git commit -m "update ticket alert state"
+          git push
